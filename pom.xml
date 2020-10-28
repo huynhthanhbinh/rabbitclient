@@ -16,6 +16,8 @@
 
         <source.directory>src/main/java</source.directory>
         <resources.directory>src/main/resources</resources.directory>
+        <basePackage>com.bht.rabbitclient</basePackage>
+        <start-class>com.bht.rabbitclient.VertXRabbitMqClient</start-class>
 
         <maven.test.skip>true</maven.test.skip>
         <maven.compiler.version>3.8.1</maven.compiler.version>
@@ -24,7 +26,6 @@
 
         <junit.version>4.13</junit.version>
         <log4j.version>2.13.3</log4j.version>
-
         <vertx.version>3.8.3</vertx.version>
         <vertx-maven-plugin.version>1.0.13</vertx-maven-plugin.version>
     </properties>
@@ -58,7 +59,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.artifactId}</finalName>
+        <finalName>rabbitclient</finalName>
         <resources>
             <resource>
                 <directory>${resources.directory}</directory>
@@ -80,6 +81,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <launcher>com.bht.rabbitclient.VertXRabbitMqClient</launcher>
                     <redeploy>true</redeploy>
                 </configuration>
             </plugin>
