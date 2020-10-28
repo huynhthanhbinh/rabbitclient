@@ -81,7 +81,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <launcher>com.bht.rabbitclient.VertXRabbitMqClient</launcher>
+                    <launcher>${start-class}</launcher>
                     <redeploy>true</redeploy>
                 </configuration>
             </plugin>
