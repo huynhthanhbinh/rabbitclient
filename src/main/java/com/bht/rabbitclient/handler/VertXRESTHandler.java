@@ -5,6 +5,9 @@ import org.apache.logging.log4j.Logger;
 
 import com.bht.rabbitclient.verticle.VertXRabbitMqVerticle;
 
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.util.internal.StringUtil;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -21,50 +24,47 @@ public final class VertXRESTHandler implements Handler<RoutingContext> {
 
     private static final Logger log = LogManager.getLogger(VertXRESTHandler.class);
     private final Vertx vertx;
-    private final DeliveryOptions deliveryOptions;
 
-    private static final String EMPTY_STRING = "";
-    private static final String CONTENT_TYPE = "Content-Type";
-    private static final String APPLICATION_JSON_UTF8 = "application/json; charset=utf-8";
     private static final String QUEUE = "queue";
     private static final String DATA = "data";
-
-    private static final int HTTP_BAD_REQUEST_CODE = 400;
-    private static final int HTTP_SUCCESS_RESPONSE_CODE = 200;
-    private static final long EVENT_BUS_TIME_OUT = 30000L;
+    private static final long EVENT_BUS_TIME_OUT = 60000L;
 
     public VertXRESTHandler(Vertx vertx) {
         this.vertx = vertx;
-        deliveryOptions = new DeliveryOptions().setSendTimeout(EVENT_BUS_TIME_OUT);
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public void handle(RoutingContext routingContext) {
         HttpServerResponse response = routingContext.response();
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON_UTF8);
+        response.putHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json; charset=utf-8");
         response.setChunked(true);
 
         HttpServerRequest request = routingContext.request();
         request.bodyHandler(buffer -> {
-            JsonObject jsonObject = buffer.toJsonObject();
+            JsonObject requestJO = buffer.toJsonObject();
             log.info("New request from: {}\n ", request.remoteAddress().host());
             log.info("Request data: {}\n", new String(buffer.getBytes()));
 
-            String producerEndpoint = jsonObject.getString(QUEUE, EMPTY_STRING);
-            if (producerEndpoint.equalsIgnoreCase(EMPTY_STRING)) {
-                response.setStatusCode(HTTP_BAD_REQUEST_CODE);
-                response.setStatusMessage("Queue name is empty!");
+            String producerEndpoint = requestJO.getString(QUEUE, StringUtil.EMPTY_STRING);
+            if (producerEndpoint.equals(StringUtil.EMPTY_STRING)) {
+                response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
+                response.setStatusMessage("Queue name is missing or empty!");
                 response.end();
                 return;
             }
 
-            JsonObject data = jsonObject.getJsonObject(DATA, new JsonObject());
+            JsonObject data = requestJO.getJsonObject(DATA, new JsonObject());
+            DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(EVENT_BUS_TIME_OUT)
+                    .addHeader(VertXRabbitMqVerticle.QUEUE_NAME_KEY, producerEndpoint);
             vertx.eventBus().send(VertXRabbitMqVerticle.CONSUMER_NAME, data, deliveryOptions, output -> {
                 if (output.failed()) {
-
+                    response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+                    response.setStatusMessage(output.cause().getMessage());
+                    response.end();
                 } else {
-
+                    response.setStatusCode(HttpResponseStatus.OK.code());
+                    response.end(((JsonObject) output.result().body()).encode());
                 }
             });
         });

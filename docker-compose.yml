@@ -1,0 +1,16 @@
+version: "3"
+networks:
+  momo-test-queue:
+    driver: bridge
+
+services:
+  message-queue:
+    image: rabbitmq:3.8.3-management
+    networks:
+      - momo-test-queue
+    environment:
+      TZ: ${TIMEZONE}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: ${RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS}
+    ports:
+      - "${MESSAGE_QUEUE_PORT}:${MESSAGE_QUEUE_PORT}"
+      - "${MESSAGE_QUEUE_MANAGEMENT_PORT}:${MESSAGE_QUEUE_MANAGEMENT_PORT}"
