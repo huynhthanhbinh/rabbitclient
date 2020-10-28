@@ -5,13 +5,14 @@ import org.apache.logging.log4j.Logger;
 
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Log4J2LoggerFactory;
+import io.vertx.core.Launcher;
 import io.vertx.core.Vertx;
 
 /**
  *
- * @author bht
+ * @author binhhuynh1
  */
-public class VertXRabbitMqClient {
+public class VertXRabbitMqClient extends Launcher {
 
     private static final Logger log = LogManager.getLogger(VertXRabbitMqClient.class);
 
