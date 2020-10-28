@@ -42,31 +42,39 @@ public final class VertXRESTHandler implements Handler<RoutingContext> {
 
         HttpServerRequest request = routingContext.request();
         request.bodyHandler(buffer -> {
-            JsonObject requestJO = buffer.toJsonObject();
-            log.info("New request from: {}\n ", request.remoteAddress().host());
-            log.info("Request data: {}\n", new String(buffer.getBytes()));
+            try {
+                JsonObject requestJO = buffer.toJsonObject();
+                log.info("Request data:\n{}\n", new String(buffer.getBytes()));
 
-            String producerEndpoint = requestJO.getString(QUEUE, StringUtil.EMPTY_STRING);
-            if (producerEndpoint.equals(StringUtil.EMPTY_STRING)) {
-                response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-                response.setStatusMessage("Queue name is missing or empty!");
-                response.end();
-                return;
-            }
-
-            JsonObject data = requestJO.getJsonObject(DATA, new JsonObject());
-            DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(EVENT_BUS_TIME_OUT)
-                    .addHeader(VertXRabbitMqVerticle.QUEUE_NAME_KEY, producerEndpoint);
-            vertx.eventBus().send(VertXRabbitMqVerticle.CONSUMER_NAME, data, deliveryOptions, output -> {
-                if (output.failed()) {
-                    response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
-                    response.setStatusMessage(output.cause().getMessage());
+                String producerEndpoint = requestJO.getString(QUEUE, StringUtil.EMPTY_STRING);
+                if (producerEndpoint.equals(StringUtil.EMPTY_STRING)) {
+                    response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
+                    response.setStatusMessage("Queue name is missing or empty!");
                     response.end();
-                } else {
-                    response.setStatusCode(HttpResponseStatus.OK.code());
-                    response.end(((JsonObject) output.result().body()).encode());
+                    return;
                 }
-            });
+
+                JsonObject data = requestJO.getJsonObject(DATA, new JsonObject());
+                DeliveryOptions deliveryOptions = new DeliveryOptions()
+                        .setSendTimeout(EVENT_BUS_TIME_OUT)
+                        .addHeader(VertXRabbitMqVerticle.QUEUE_NAME_KEY, producerEndpoint);
+
+                vertx.eventBus().send(VertXRabbitMqVerticle.CONSUMER_NAME, data, deliveryOptions, output -> {
+                    if (output.failed()) {
+                        response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+                        response.setStatusMessage(output.cause().getMessage());
+                        response.end();
+                    } else {
+                        response.setStatusCode(HttpResponseStatus.OK.code());
+                        response.end(((JsonObject) output.result().body()).encode());
+                    }
+                });
+            } catch (Exception exception) {
+                response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
+                response.setStatusMessage(exception.getMessage());
+                response.end();
+                log.error("{}: {}", exception.getClass().getSimpleName(), exception.getMessage());
+            }
         });
     }
 }
