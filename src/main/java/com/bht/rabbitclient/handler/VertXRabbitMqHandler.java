@@ -77,12 +77,7 @@ public final class VertXRabbitMqHandler {
 
     private void handleResponse(JsonObject response, Message<JsonObject> event) {
         log.info("Receive new response: {}", response);
-        int statusCode = response.getInteger("statusCode");
-        if (statusCode == 200) {
-            event.reply(response);
-        } else {
-            event.fail(statusCode, response.getString("errorMessage"));
-        }
+        event.reply(response);
     }
 
     public void handleCreateConnection(AsyncResult<Void> res) {
