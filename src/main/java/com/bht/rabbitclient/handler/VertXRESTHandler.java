@@ -57,7 +57,7 @@ public final class VertXRESTHandler implements Handler<RoutingContext> {
                 JsonObject data = requestJO.getJsonObject(DATA, new JsonObject());
                 DeliveryOptions deliveryOptions = new DeliveryOptions()
                         .setSendTimeout(EVENT_BUS_TIME_OUT)
-                        .addHeader(VertXRabbitMqVerticle.QUEUE_NAME_KEY, producerEndpoint);
+                        .addHeader(VertXRabbitMqHandler.PRODUCER_QUEUE_KEY, producerEndpoint);
 
                 vertx.eventBus().send(VertXRabbitMqVerticle.CONSUMER_NAME, data, deliveryOptions, output -> {
                     if (output.failed()) {

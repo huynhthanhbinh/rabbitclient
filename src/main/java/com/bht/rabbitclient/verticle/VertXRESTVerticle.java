@@ -25,6 +25,11 @@ public final class VertXRESTVerticle extends AbstractVerticle {
         startHttpServer(startFuture);
     }
 
+    @Override
+    public void stop() {
+        log.info("Shutting down VertXRESTVerticle ...");
+    }
+
     private void startHttpServer(Promise<Void> startFuture) {
         Router router = Router.router(vertx);
         router.post("/rabbitClient").handler(new VertXRESTHandler(getVertx()));
