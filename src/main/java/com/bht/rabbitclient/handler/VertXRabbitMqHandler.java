@@ -31,7 +31,7 @@ public final class VertXRabbitMqHandler {
 
     private static final Map<String, Handler<JsonObject>> MAP_JOBS = new ConcurrentHashMap<>();
     private static final Map<String, Long> MAP_EXPIRATIONS = new ConcurrentHashMap<>();
-    private static final Long EXP_IN_MILLIS = 2000L;
+    private static final Long EXP_IN_MILLIS = 60000L;
     private final RabbitMQClient rabbitMQClient;
 
     public VertXRabbitMqHandler(RabbitMQClient rabbitMQClient) {

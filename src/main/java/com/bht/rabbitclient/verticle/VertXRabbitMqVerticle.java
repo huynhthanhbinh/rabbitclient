@@ -18,7 +18,7 @@ public final class VertXRabbitMqVerticle extends AbstractVerticle {
 
     private static final Logger log = LogManager.getLogger(VertXRabbitMqVerticle.class);
     public static final String CONSUMER_NAME = VertXRabbitMqVerticle.class.getSimpleName();
-    private static final Integer PERIOD_IN_MILLIS = 2000;
+    private static final Integer PERIOD_IN_MILLIS = 30000;
 
     public static final RabbitMQOptions RABBIT_MQ_OPTIONS = new RabbitMQOptions()
             .setHost("localhost")
