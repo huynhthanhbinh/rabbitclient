@@ -35,7 +35,7 @@ public final class VertXRESTVerticle extends AbstractVerticle {
         router.post("/rabbitClient").handler(new VertXRESTHandler(getVertx()));
 
         HttpServerOptions options = new HttpServerOptions();
-        options.setPort(6789);
+        options.setPort(1234);
 
         HttpServer httpServer = vertx
                 .createHttpServer(options)
