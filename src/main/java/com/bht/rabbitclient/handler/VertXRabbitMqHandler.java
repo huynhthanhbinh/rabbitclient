@@ -27,7 +27,7 @@ public final class VertXRabbitMqHandler {
 
     private static final Logger log = LogManager.getLogger(VertXRabbitMqHandler.class);
     public static final String PRODUCER_QUEUE_KEY = "QUEUE_NAME";
-    public static final String CONSUMER_QUEUE_NAME = "replyQueue";
+    public static final String CONSUMER_QUEUE_NAME = "replyQueue_" + UUID.randomUUID().toString().split("-")[4];
 
     private static final Map<String, Handler<JsonObject>> MAP_JOBS = new ConcurrentHashMap<>();
     private static final Map<String, Long> MAP_EXPIRATIONS = new ConcurrentHashMap<>();
@@ -54,6 +54,7 @@ public final class VertXRabbitMqHandler {
                                        String producerQueueName,
                                        long expInMillis,
                                        Handler<JsonObject> callback) {
+
         log.info("publish message to queue \"{}\": {}", producerQueueName, message);
         String correlationId = message.getJsonObject("properties").getString("correlationId");
         rabbitMQClient.basicPublish("", producerQueueName, message,
