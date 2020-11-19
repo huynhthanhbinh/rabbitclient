@@ -24,6 +24,7 @@ public final class RabbitMessage {
         return new JsonObject()
                 .put("contentType", "application/json")
                 .put("contentEncoding", "UTF-8")
+                .put("expiration", "9999") // message will be kept in queue for only 10 seconds
                 .put("replyTo", Objects.requireNonNull(this.replyQueueName))
                 .put("correlationId", Objects.requireNonNull(this.correlationId));
     }
@@ -34,29 +35,29 @@ public final class RabbitMessage {
         this.body = body;
     }
 
-    public static RabbitMessage.RabbitMessageBuilder builder() {
-        return new RabbitMessage.RabbitMessageBuilder();
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public static class RabbitMessageBuilder {
+    public static class Builder {
         private String correlationId;
         private String replyQueueName;
         private JsonObject body;
 
-        private RabbitMessageBuilder() {
+        private Builder() {
         }
 
-        public RabbitMessage.RabbitMessageBuilder correlationId(String correlationId) {
+        public Builder correlationId(String correlationId) {
             this.correlationId = correlationId;
             return this;
         }
 
-        public RabbitMessage.RabbitMessageBuilder replyQueueName(String replyQueueName) {
+        public Builder replyQueueName(String replyQueueName) {
             this.replyQueueName = replyQueueName;
             return this;
         }
 
-        public RabbitMessage.RabbitMessageBuilder body(JsonObject body) {
+        public Builder body(JsonObject body) {
             this.body = body;
             return this;
         }
