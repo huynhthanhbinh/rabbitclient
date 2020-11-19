@@ -77,7 +77,7 @@ public final class VertXRabbitMqHandler {
     }
 
     private void handleResponse(JsonObject response, Message<JsonObject> event) {
-        log.info("Receive new response: {}", response);
+        log.info("Receive new response:\n{}\n", response);
         event.reply(response);
     }
 
