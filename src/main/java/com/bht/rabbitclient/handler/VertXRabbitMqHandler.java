@@ -18,6 +18,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQConsumer;
 import io.vertx.rabbitmq.RabbitMQMessage;
+import io.vertx.rabbitmq.RabbitMQOptions;
 
 /**
  *
@@ -81,9 +82,15 @@ public final class VertXRabbitMqHandler {
         event.reply(response);
     }
 
-    public void handleCreateConnection(AsyncResult<Void> res) {
+    public void handleCreateConnection(AsyncResult<Void> res, RabbitMQOptions rabbitMQOptions) {
         if (res.succeeded()) {
             log.info("connect to RabbitMQ succeeded");
+            log.info("connection info:\n{\n\thost: {},\n\tport: {},\n\tusername: {},\n\tpassword: {}\n}",
+                    rabbitMQOptions.getHost(),
+                    rabbitMQOptions.getPort(),
+                    rabbitMQOptions.getUser(),
+                    rabbitMQOptions.getPassword());
+
             rabbitMQClient.queueDeclare(CONSUMER_QUEUE_NAME, true, false, true, declareQueueResult -> {
                 if (declareQueueResult.succeeded()) {
                     log.info("auto-delete queue declare succeeded: {}", CONSUMER_QUEUE_NAME);
@@ -93,7 +100,13 @@ public final class VertXRabbitMqHandler {
                 }
             });
         } else {
-            log.error("connect to RabbitMQ failed");
+            log.error("connect to RabbitMQ failed", res.cause());
+            log.info("connection info:\n{\n\thost: {},\n\tport: {},\n\tusername: {},\n\tpassword: {}\n}",
+                    rabbitMQOptions.getHost(),
+                    rabbitMQOptions.getPort(),
+                    rabbitMQOptions.getUser(),
+                    rabbitMQOptions.getPassword());
+            System.exit(-1);
         }
     }
 

@@ -32,7 +32,7 @@ public final class VertXRabbitMqVerticle extends AbstractVerticle {
         RabbitMQClient rabbitMQClient = RabbitMQClient.create(vertx, RABBIT_MQ_OPTIONS);
         VertXRabbitMqHandler rabbitMQService = new VertXRabbitMqHandler(rabbitMQClient);
 
-        rabbitMQClient.start(rabbitMQService::handleCreateConnection);
+        rabbitMQClient.start(res -> rabbitMQService.handleCreateConnection(res, RABBIT_MQ_OPTIONS));
         vertx.eventBus().consumer(CONSUMER_NAME, rabbitMQService::handlePublishMessage);
         vertx.setPeriodic(PERIOD_IN_MILLIS, rabbitMQService::runScheduledTask);
         startFuture.complete();
