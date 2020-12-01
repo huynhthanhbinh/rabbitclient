@@ -101,7 +101,7 @@ public final class VertXRabbitMqHandler {
             });
         } else {
             log.error("connect to RabbitMQ failed", res.cause());
-            log.info("connection info:\n{\n\thost: {},\n\tport: {},\n\tusername: {},\n\tpassword: {}\n}",
+            log.error("connection info:\n{\n\thost: {},\n\tport: {},\n\tusername: {},\n\tpassword: {}\n}",
                     rabbitMQOptions.getHost(),
                     rabbitMQOptions.getPort(),
                     rabbitMQOptions.getUser(),
@@ -140,5 +140,11 @@ public final class VertXRabbitMqHandler {
 
         MAP_JOBS.keySet().removeAll(expiredList);
         MAP_EXPIRATIONS.keySet().removeAll(expiredList);
+
+        expiredList.forEach(this::notifyTimedOutMessage);
+    }
+
+    private void notifyTimedOutMessage(String messageCorrelationId) {
+        log.warn("Timed out waiting for response of message: <{}>", messageCorrelationId);
     }
 }
