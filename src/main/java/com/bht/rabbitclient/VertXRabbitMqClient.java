@@ -10,6 +10,7 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Log4J2LoggerFactory;
 import io.vertx.core.Launcher;
 import io.vertx.core.Vertx;
+import io.vertx.core.logging.Log4j2LogDelegateFactory;
 
 /**
  *
@@ -20,6 +21,7 @@ public final class VertXRabbitMqClient extends Launcher {
     private static final Logger log = LogManager.getLogger(VertXRabbitMqClient.class);
 
     public static void main(String[] args) {
+        System.setProperty("vertx.logger-delegate-factory-class-name", Log4j2LogDelegateFactory.class.getCanonicalName());
         InternalLoggerFactory.setDefaultFactory(Log4J2LoggerFactory.INSTANCE);
         log.info("Starting RabbitMQ Client v1.0 by binh.huynh1");
 
