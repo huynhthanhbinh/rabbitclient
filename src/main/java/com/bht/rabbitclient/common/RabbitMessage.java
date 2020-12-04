@@ -39,7 +39,7 @@ public final class RabbitMessage {
         return new Builder();
     }
 
-    public static class Builder {
+    public static final class Builder {
         private String correlationId;
         private String replyQueueName;
         private JsonObject body;
