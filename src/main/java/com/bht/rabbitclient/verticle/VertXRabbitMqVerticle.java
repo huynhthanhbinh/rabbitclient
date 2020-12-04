@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.bht.rabbitclient.handler.VertXRabbitMqHandler;
+import com.bht.rabbitclient.util.LauncherUtil;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -20,19 +21,13 @@ public final class VertXRabbitMqVerticle extends AbstractVerticle {
     public static final String CONSUMER_NAME = VertXRabbitMqVerticle.class.getSimpleName();
     private static final Integer PERIOD_IN_MILLIS = 30000;
 
-    public static final RabbitMQOptions RABBIT_MQ_OPTIONS = new RabbitMQOptions()
-            .setHost("localhost")
-            .setPort(5672)
-            .setUser("test")
-            .setPassword("test");
-
     @Override
     public void start(Promise<Void> startFuture) {
         log.info("Starting VertXRabbitMqVerticle ...");
-        RabbitMQClient rabbitMQClient = RabbitMQClient.create(vertx, RABBIT_MQ_OPTIONS);
+        RabbitMQOptions rabbitMQOptions = LauncherUtil.getConfigData().getRabbitMQOptions();
+        RabbitMQClient rabbitMQClient = RabbitMQClient.create(vertx, rabbitMQOptions);
         VertXRabbitMqHandler rabbitMQService = new VertXRabbitMqHandler(rabbitMQClient);
-
-        rabbitMQClient.start(res -> rabbitMQService.handleCreateConnection(res, RABBIT_MQ_OPTIONS));
+        rabbitMQClient.start(res -> rabbitMQService.handleCreateConnection(res, rabbitMQOptions));
         vertx.eventBus().consumer(CONSUMER_NAME, rabbitMQService::handlePublishMessage);
         vertx.setPeriodic(PERIOD_IN_MILLIS, rabbitMQService::runScheduledTask);
         startFuture.complete();

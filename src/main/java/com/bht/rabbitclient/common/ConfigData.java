@@ -38,6 +38,10 @@ public final class ConfigData {
                 .setUser("test")
                 .setPassword("test");
     }
+    
+    public ConfigData(String configDataRaw) {
+        this(new JsonObject(configDataRaw));
+    }
 
     public ConfigData(JsonObject configDataJO) {
         listeningPath = Objects.requireNonNull(configDataJO.getString(LISTENING_PATH));
@@ -64,5 +68,17 @@ public final class ConfigData {
     @Override
     public String toString() {
         return toJson().encodePrettily();
+    }
+
+    public RabbitMQOptions getRabbitMQOptions() {
+        return rabbitMQOptions;
+    }
+
+    public String getListeningPath() {
+        return listeningPath;
+    }
+
+    public int getListeningPort() {
+        return listeningPort;
     }
 }

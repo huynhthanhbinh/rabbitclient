@@ -3,6 +3,7 @@ package com.bht.rabbitclient.verticle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.bht.rabbitclient.common.ConfigData;
 import com.bht.rabbitclient.handler.VertXRESTHandler;
 
 import io.vertx.core.AbstractVerticle;
@@ -32,10 +33,10 @@ public final class VertXRESTVerticle extends AbstractVerticle {
 
     private void startHttpServer(Promise<Void> startFuture) {
         Router router = Router.router(vertx);
-        router.post("/rabbitClient").handler(new VertXRESTHandler(getVertx()));
+        router.post(ConfigData.getDefaultConfig().getListeningPath()).handler(new VertXRESTHandler(getVertx()));
 
         HttpServerOptions options = new HttpServerOptions();
-        options.setPort(1234);
+        options.setPort(ConfigData.getDefaultConfig().getListeningPort());
 
         HttpServer httpServer = vertx
                 .createHttpServer(options)
