@@ -56,8 +56,8 @@ public final class VertXRabbitMqHandler {
                                        long expInMillis,
                                        Handler<JsonObject> callback) {
 
-        log.info("publish message to queue \"{}\": {}", producerQueueName, message);
         String correlationId = message.getJsonObject("properties").getString("correlationId");
+        log.info("Publishing message <{}> to queue <{}>: {}", correlationId, producerQueueName, message);
         rabbitMQClient.basicPublish("", producerQueueName, message,
                 result -> handlePublishMessageToQueue(result, producerQueueName, correlationId, expInMillis, callback));
     }
@@ -68,10 +68,10 @@ public final class VertXRabbitMqHandler {
                                              long expInMillis,
                                              Handler<JsonObject> callback) {
         if (result.failed()) {
-            log.error("Publish message <{}> to queue \"{}\" failed", correlationId, producerQueueName, result.cause());
+            log.error("Publish message <{}> to queue <{}> failed", correlationId, producerQueueName, result.cause());
             result.cause().printStackTrace();
         } else {
-            log.info("Publish message <{}>  to queue \"{}\" succeeded", correlationId, producerQueueName);
+            log.info("Publish message <{}>  to queue <{}> succeeded", correlationId, producerQueueName);
             MAP_EXPIRATIONS.put(correlationId, System.currentTimeMillis() + expInMillis);
             MAP_JOBS.put(correlationId, callback);
         }
@@ -84,8 +84,8 @@ public final class VertXRabbitMqHandler {
 
     public void handleCreateConnection(AsyncResult<Void> res, RabbitMQOptions rabbitMQOptions) {
         if (res.succeeded()) {
-            log.info("connect to RabbitMQ succeeded");
-            log.info("connection info:\n{\n\thost: {},\n\tport: {},\n\tusername: {},\n\tpassword: {}\n}",
+            log.info("Connect to RabbitMQ succeeded");
+            log.info("Connection info:\n{\n\t\"host\": \"{}\",\n\t\"port\": {},\n\t\"username\": \"{}\",\n\t\"password\": \"{}\"\n}",
                     rabbitMQOptions.getHost(),
                     rabbitMQOptions.getPort(),
                     rabbitMQOptions.getUser(),
@@ -93,15 +93,15 @@ public final class VertXRabbitMqHandler {
 
             rabbitMQClient.queueDeclare(CONSUMER_QUEUE_NAME, true, false, true, declareQueueResult -> {
                 if (declareQueueResult.succeeded()) {
-                    log.info("auto-delete queue declare succeeded: {}", CONSUMER_QUEUE_NAME);
+                    log.info("Auto-delete queue declare succeeded: {}", CONSUMER_QUEUE_NAME);
                     rabbitMQClient.basicConsumer(CONSUMER_QUEUE_NAME, this::handleDeclareConsumer);
                 } else {
-                    log.error("auto-delete queue declare failed: {}, {}", CONSUMER_QUEUE_NAME, declareQueueResult.cause().getMessage());
+                    log.error("Auto-delete queue declare failed: {}, {}", CONSUMER_QUEUE_NAME, declareQueueResult.cause().getMessage());
                 }
             });
         } else {
-            log.error("connect to RabbitMQ failed", res.cause());
-            log.error("connection info:\n{\n\thost: {},\n\tport: {},\n\tusername: {},\n\tpassword: {}\n}",
+            log.error("Connect to RabbitMQ failed", res.cause());
+            log.error("Connection info:\n{\n\thost: {},\n\tport: {},\n\tusername: {},\n\tpassword: {}\n}",
                     rabbitMQOptions.getHost(),
                     rabbitMQOptions.getPort(),
                     rabbitMQOptions.getUser(),
@@ -112,10 +112,10 @@ public final class VertXRabbitMqHandler {
 
     private void handleDeclareConsumer(AsyncResult<RabbitMQConsumer> declareConsumerResult) {
         if (declareConsumerResult.failed()) {
-            log.error("failed create consumer of queue: {}", CONSUMER_QUEUE_NAME);
+            log.error("Failed create consumer of queue: {}", CONSUMER_QUEUE_NAME);
             declareConsumerResult.cause().printStackTrace();
         } else {
-            log.info("succeeded create consumer of queue: {}", CONSUMER_QUEUE_NAME);
+            log.info("Succeeded create consumer of queue: {}", CONSUMER_QUEUE_NAME);
             declareConsumerResult.result().handler(this::consumeMessageFromQueue);
         }
     }
@@ -125,6 +125,7 @@ public final class VertXRabbitMqHandler {
 
         /* if job had been created before --> processing, otherwise, ignore processing message */
         if (MAP_JOBS.containsKey(correlationId)) {
+            MAP_EXPIRATIONS.remove(correlationId);
             MAP_JOBS.remove(correlationId)
                     .handle(new JsonObject(message.body()));
         }
@@ -140,7 +141,6 @@ public final class VertXRabbitMqHandler {
 
         MAP_JOBS.keySet().removeAll(expiredList);
         MAP_EXPIRATIONS.keySet().removeAll(expiredList);
-
         expiredList.forEach(this::notifyTimedOutMessage);
     }
 
