@@ -1,9 +1,0 @@
-{
-  "listening_port": 1234,
-  "connection_info": {
-    "rabbitmq_host": "localhost",
-    "rabbitmq_port": 5672,
-    "rabbitmq_user": "test",
-    "rabbitmq_pass": "test"
-  }
-}

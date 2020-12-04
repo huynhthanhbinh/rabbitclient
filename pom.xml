@@ -16,6 +16,7 @@
 
         <source.directory>src/main/java</source.directory>
         <resources.directory>src/main/resources</resources.directory>
+
         <basePackage>com.bht.rabbitclient</basePackage>
         <start-class>com.bht.rabbitclient.VertXRabbitMqClient</start-class>
 
@@ -23,10 +24,12 @@
         <maven.compiler.version>3.8.1</maven.compiler.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.build.timestamp.format>yyyy/MM/dd hh:mm:ss a,z</maven.build.timestamp.format>
 
         <log4j.version>2.13.3</log4j.version>
         <slf4j.version>1.7.30</slf4j.version>
         <vertx.version>3.8.3</vertx.version>
+
         <vertx-maven-plugin.version>1.0.13</vertx-maven-plugin.version>
     </properties>
 
@@ -74,6 +77,14 @@
             <resource>
                 <directory>${resources.directory}</directory>
                 <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>${project.basedir}</directory>
+                <filtering>true</filtering>
+                <targetPath>${project.basedir}/target</targetPath>
+                <includes>
+                    <include>**/*.json</include>
+                </includes>
             </resource>
         </resources>
         <plugins>

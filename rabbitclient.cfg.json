@@ -1,0 +1,10 @@
+{
+  "listening_port": 1234,
+  "listening_path": "/rabbitClient",
+  "rabbitmq_connection_info": {
+    "host": "localhost",
+    "port": 5672,
+    "user": "test",
+    "pass": "test"
+  }
+}
