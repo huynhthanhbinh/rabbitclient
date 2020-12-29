@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.bht.rabbitclient.common.RabbitMessage;
+import com.bht.rabbitclient.util.LauncherUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -28,11 +29,11 @@ public final class VertXRabbitMqHandler {
 
     private static final Logger log = LogManager.getLogger(VertXRabbitMqHandler.class);
     public static final String PRODUCER_QUEUE_KEY = "QUEUE_NAME";
-    public static final String CONSUMER_QUEUE_NAME = "replyQueue_" + UUID.randomUUID().toString().split("-")[4];
+    public static final String CONSUMER_QUEUE_NAME = LauncherUtil.getConfigData().getConsumerQueueNamePrefix() + UUID.randomUUID().toString().split("-")[4];
 
     private static final Map<String, Handler<JsonObject>> MAP_JOBS = new ConcurrentHashMap<>();
     private static final Map<String, Long> MAP_EXPIRATIONS = new ConcurrentHashMap<>();
-    private static final Long EXP_IN_MILLIS = 60000L;
+    private static final int EXP_IN_MILLIS = LauncherUtil.getConfigData().getProducerQueueMessageTTL();
     private final RabbitMQClient rabbitMQClient;
 
     public VertXRabbitMqHandler(RabbitMQClient rabbitMQClient) {
@@ -40,14 +41,15 @@ public final class VertXRabbitMqHandler {
     }
 
     public void handlePublishMessage(Message<JsonObject> event) {
+        String correlationId = UUID.randomUUID().toString();
         RabbitMessage message = RabbitMessage.builder()
                 .body(event.body())
-                .correlationId(UUID.randomUUID().toString())
+                .correlationId(correlationId)
                 .replyQueueName(CONSUMER_QUEUE_NAME)
                 .build();
 
         String producerQueueName = event.headers().get(PRODUCER_QUEUE_KEY);
-        publishMessageToQueue(message.toJson(), producerQueueName, EXP_IN_MILLIS, reply -> handleResponse(reply, event));
+        publishMessageToQueue(message.toJson(), producerQueueName, EXP_IN_MILLIS, reply -> handleResponse(reply, correlationId, event));
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -77,8 +79,8 @@ public final class VertXRabbitMqHandler {
         }
     }
 
-    private void handleResponse(JsonObject response, Message<JsonObject> event) {
-        log.info("Receive new response:\n{}\n", response);
+    private void handleResponse(JsonObject response, String correlationId, Message<JsonObject> event) {
+        log.info("Receive new response of <{}>:\n{}\n", correlationId, response);
         event.reply(response);
     }
 
@@ -122,8 +124,6 @@ public final class VertXRabbitMqHandler {
 
     private void consumeMessageFromQueue(RabbitMQMessage message) {
         String correlationId = message.properties().correlationId();
-
-        /* if job had been created before --> processing, otherwise, ignore processing message */
         if (MAP_JOBS.containsKey(correlationId)) {
             MAP_EXPIRATIONS.remove(correlationId);
             MAP_JOBS.remove(correlationId)
