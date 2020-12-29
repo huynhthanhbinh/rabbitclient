@@ -3,6 +3,7 @@ package com.bht.rabbitclient.handler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.bht.rabbitclient.util.LauncherUtil;
 import com.bht.rabbitclient.verticle.VertXRabbitMqVerticle;
 
 import io.netty.handler.codec.http.HttpHeaders;
@@ -23,11 +24,10 @@ import io.vertx.ext.web.RoutingContext;
 public final class VertXRESTHandler implements Handler<RoutingContext> {
 
     private static final Logger log = LogManager.getLogger(VertXRESTHandler.class);
-    private final Vertx vertx;
-
     private static final String QUEUE = "queue";
     private static final String DATA = "data";
-    private static final long EVENT_BUS_TIME_OUT = 60000L;
+    private static final long EVENT_BUS_TIME_OUT = LauncherUtil.getConfigData().getProducerQueueMessageTTL();
+    private final Vertx vertx;
 
     public VertXRESTHandler(Vertx vertx) {
         this.vertx = vertx;
