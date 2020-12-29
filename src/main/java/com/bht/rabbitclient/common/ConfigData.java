@@ -9,7 +9,6 @@ import io.vertx.rabbitmq.RabbitMQOptions;
  *
  * @author binhhuynh1
  */
-@SuppressWarnings("java:S1075")
 public final class ConfigData {
 
     private static final String LISTENING_PORT = "listening_port";
@@ -19,26 +18,11 @@ public final class ConfigData {
     private static final String PORT = "port";
     private static final String USER = "user";
     private static final String PASS = "pass";
-    private static final ConfigData DEFAULT_CONFIG = new ConfigData();
 
     private final RabbitMQOptions rabbitMQOptions;
     private final String listeningPath;
     private final int listeningPort;
 
-    public static ConfigData getDefaultConfig() {
-        return DEFAULT_CONFIG;
-    }
-
-    private ConfigData() {
-        listeningPort = 1234;
-        listeningPath = "/rabbitClient";
-        rabbitMQOptions = new RabbitMQOptions()
-                .setHost("localhost")
-                .setPort(5672)
-                .setUser("test")
-                .setPassword("test");
-    }
-    
     public ConfigData(String configDataRaw) {
         this(new JsonObject(configDataRaw));
     }
