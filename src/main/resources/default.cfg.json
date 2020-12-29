@@ -1,10 +1,10 @@
 {
-  "listening_port": 1234,
+  "listening_port": 6789,
   "listening_path": "/rabbitClient",
   "producer_queue_message_ttl": 60000,
   "consumer_queue_name_prefix": "replyQueue_",
   "rabbitmq_connection_info": {
-    "host": "172.16.9.164",
+    "host": "localhost",
     "port": 5672,
     "user": "test",
     "pass": "test"
